@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>月圆，心也团圆报名表 / Mid Autumn Festival Draw</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Mulish:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #fbe6c8;
+    --paper-dark: #f0d1a0;
+    --ink: #4a2a12;
+    --ink-soft: #7a4a22;
+    --gold: #d68c2f;
+    --gold-bright: #f2ac48;
+    --wine: #b0401f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Mulish', 'Segoe UI', Verdana, sans-serif;
+    background: radial-gradient(ellipse at top, var(--paper) 0%, var(--paper-dark) 100%);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+  }
+  .stage{
+    width:100%;
+    max-width:640px;
+    text-align:center;
+  }
+  h1{
+    font-family:'Lora', 'Noto Serif SC', Georgia, serif;
+    font-size:1.7rem;
+    line-height:1.5;
+    letter-spacing:0.01em;
+    margin:0 0 6px;
+    font-weight:700;
+    color:var(--ink);
+  }
+  .eyebrow{
+    font-family: 'Mulish', sans-serif;
+    font-weight:700;
+    font-size:0.72rem;
+    letter-spacing:0.26em;
+    text-transform:uppercase;
+    color:var(--wine);
+    margin-bottom:10px;
+  }
+  .sub{
+    font-size:0.95rem;
+    color:var(--ink-soft);
+    margin-bottom:26px;
+    font-style:italic;
+  }
+  .wheel-wrap{
+    position:relative;
+    width:min(78vw, 380px);
+    height:min(78vw, 380px);
+    margin:0 auto 26px;
+  }
+  .pointer{
+    position:absolute;
+    top:-6px;
+    left:50%;
+    transform:translateX(-50%);
+    width:0; height:0;
+    border-left:14px solid transparent;
+    border-right:14px solid transparent;
+    border-top:24px solid var(--wine);
+    z-index:5;
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+  }
+  canvas{
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    box-shadow:
+      0 0 0 6px var(--paper),
+      0 0 0 9px var(--gold),
+      0 18px 34px rgba(44,36,22,0.35);
+    background:var(--paper);
+  }
+  .hub{
+    position:absolute;
+    top:50%; left:50%;
+    width:16%; height:16%;
+    background:radial-gradient(circle at 35% 35%, var(--gold-bright), var(--gold) 70%);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    box-shadow:0 2px 6px rgba(0,0,0,0.4), inset 0 0 0 2px var(--paper);
+    z-index:4;
+  }
+  button#spin{
+    font-family:'Mulish', sans-serif;
+    font-weight:700;
+    font-size:1rem;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    background:var(--wine);
+    color:var(--paper);
+    border:1px solid var(--gold);
+    padding:12px 34px;
+    border-radius:2px;
+    cursor:pointer;
+    transition:transform .15s ease, background .2s ease;
+  }
+  button#spin:hover:not(:disabled){background:#c04b26; transform:translateY(-1px);}
+  button#spin:active:not(:disabled){transform:translateY(0);}
+  button#spin:disabled{opacity:0.5; cursor:not-allowed;}
+
+  details{
+    margin-top:22px;
+    text-align:left;
+    max-width:420px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+  summary{
+    cursor:pointer;
+    font-size:0.78rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    outline:none;
+  }
+  textarea{
+    width:100%;
+    margin-top:10px;
+    font-family:inherit;
+    font-size:0.9rem;
+    padding:10px;
+    border:1px solid var(--gold);
+    border-radius:3px;
+    background:#fffdf6;
+    color:var(--ink);
+    resize:vertical;
+    min-height:120px;
+  }
+  .apply-row{
+    display:flex;
+    gap:10px;
+    margin-top:8px;
+  }
+  .apply-row button{
+    font-family:inherit;
+    font-size:0.75rem;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    background:transparent;
+    border:1px solid var(--ink-soft);
+    color:var(--ink-soft);
+    padding:7px 14px;
+    border-radius:2px;
+    cursor:pointer;
+  }
+  .apply-row button:hover{background:var(--ink-soft); color:var(--paper);}
+
+  .overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(20,15,8,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .35s ease;
+    z-index:20;
+  }
+  .overlay.show{opacity:1; pointer-events:auto;}
+  .card{
+    background:var(--paper);
+    border:1px solid var(--gold);
+    box-shadow:0 0 0 6px var(--paper-dark), 0 24px 50px rgba(0,0,0,0.45);
+    max-width:460px;
+    max-height:88vh;
+    overflow-y:auto;
+    width:100%;
+    padding:38px 32px 30px;
+    text-align:center;
+    position:relative;
+    transform:translateY(14px) scale(0.97);
+    transition:transform .4s cubic-bezier(.2,.8,.25,1);
+  }
+  .overlay.show .card{transform:translateY(0) scale(1);}
+  .card .rule{
+    width:46px;
+    height:2px;
+    background:var(--gold);
+    margin:0 auto 16px;
+  }
+  .card .chosen-label{
+    font-size:0.75rem;
+    letter-spacing:0.24em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:6px;
+  }
+  .card .chosen-name{
+    font-family:'Lora', 'Noto Serif SC', Georgia, serif;
+    font-size:2.6rem;
+    font-weight:700;
+    line-height:1.2;
+    margin-bottom:10px;
+    color:var(--wine);
+  }
+  .card .lot-number{
+    display:inline-block;
+    font-family:'Mulish', sans-serif;
+    font-weight:700;
+    font-size:0.85rem;
+    letter-spacing:0.1em;
+    color:var(--paper);
+    background:var(--gold);
+    padding:5px 16px;
+    border-radius:20px;
+    margin-bottom:18px;
+  }
+  .record-section{
+    margin-top:30px;
+    max-width:460px;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:left;
+  }
+  .record-title{
+    font-family:'Mulish', sans-serif;
+    font-weight:700;
+    font-size:0.72rem;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--wine);
+    margin-bottom:10px;
+    text-align:center;
+  }
+  .record-table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fffaf0;
+    border:1px solid var(--gold);
+    border-radius:4px;
+    overflow:hidden;
+    font-size:0.85rem;
+  }
+  .record-table th{
+    background:var(--wine);
+    color:var(--paper);
+    font-family:'Mulish', sans-serif;
+    font-weight:700;
+    font-size:0.68rem;
+    letter-spacing:0.05em;
+    padding:8px 10px;
+    text-align:left;
+    line-height:1.3;
+  }
+  .record-table td{
+    padding:8px 10px;
+    border-top:1px solid var(--paper-dark);
+    color:var(--ink);
+    vertical-align:top;
+  }
+  .record-table td.num{
+    font-weight:700;
+    color:var(--gold);
+    white-space:nowrap;
+  }
+  .record-table td.verse-cell{
+    font-family:'Lora','Noto Serif SC',serif;
+    font-style:italic;
+    font-size:0.82rem;
+    color:var(--ink-soft);
+  }
+  .record-empty{
+    text-align:center;
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    font-style:italic;
+    padding:14px 0;
+  }
+  .record-clear-row{
+    text-align:center;
+    margin-top:10px;
+  }
+  .clear-btn{
+    font-family:'Mulish', sans-serif;
+    font-size:0.72rem;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    text-decoration:underline;
+    cursor:pointer;
+    padding:4px;
+  }
+  .clear-btn:hover{color:var(--wine);}
+  .card .verse-block{
+    margin-bottom:18px;
+  }
+  .card .verse-block:last-of-type{
+    margin-bottom:0;
+    padding-top:16px;
+    border-top:1px solid var(--paper-dark);
+  }
+  .card .lang-tag{
+    font-family:'Mulish', sans-serif;
+    font-weight:700;
+    font-size:0.66rem;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:8px;
+  }
+  .card .verse-zh{
+    font-family:'Noto Serif SC', 'PingFang SC', 'Microsoft YaHei', serif;
+    font-style:normal;
+    letter-spacing:0.02em;
+  }
+  .card .verse-text{
+    font-family:'Lora', Georgia, serif;
+    font-size:1.15rem;
+    line-height:1.65;
+    font-style:italic;
+    margin-bottom:8px;
+    color:var(--ink);
+  }
+  .card .verse-ref{
+    font-family:'Mulish', sans-serif;
+    font-weight:600;
+    font-size:0.85rem;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+  }
+  .card .close-btn{
+    margin-top:26px;
+    font-family:inherit;
+    font-size:0.75rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    background:none;
+    border:1px solid var(--ink-soft);
+    color:var(--ink-soft);
+    padding:9px 22px;
+    border-radius:2px;
+    cursor:pointer;
+  }
+  .card .close-btn:hover{background:var(--ink-soft); color:var(--paper);}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="eyebrow">中秋抽奖 &middot; Mid Autumn Draw</div>
+  <h1>月圆，心也团圆报名表<br>Mid Autumn Festival Draw</h1>
+  <div class="sub">Spin to choose &mdash; a verse follows</div>
+
+  <div class="wheel-wrap">
+    <div class="pointer"></div>
+    <canvas id="wheel" width="600" height="600"></canvas>
+    <div class="hub"></div>
+  </div>
+
+  <button id="spin">Spin the wheel</button>
+
+  <details open>
+    <summary>输入名单与经文 &middot; Input Names & Verses</summary>
+    <div style="font-size:0.75rem; color:var(--ink-soft); margin-top:8px; margin-bottom:6px; font-style:italic;">
+      One per line: NAME or NAME : VERSE<br>
+      Example:<br>
+      TESTER 1 : John 3:16<br>
+      TESTER 2
+    </div>
+    <textarea id="assignInput" spellcheck="false" placeholder="TESTER 1 : John 3:16&#10;TESTER 2 : Psalm 23:1&#10;TESTER 3"></textarea>
+    <div class="apply-row">
+      <button id="applyAssignments">Update Wheel</button>
+    </div>
+    <div id="assignNote" style="margin-top:8px; font-size:0.72rem; color:var(--ink-soft); font-style:italic;"></div>
+  </details>
+
+  <div class="record-section">
+    <div class="record-title">抽签记录 &middot; Draw Record</div>
+    <table class="record-table" id="recordTable">
+      <thead>
+        <tr><th>签号<br>No.</th><th>姓名<br>Name</th><th>经文<br>Verse</th></tr>
+      </thead>
+      <tbody id="recordBody"></tbody>
+    </table>
+    <div class="record-empty" id="recordEmpty">No draws yet.</div>
+    <div class="record-clear-row"><button id="clearRecords" class="clear-btn">Clear record</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <div class="chosen-label">The wheel has chosen</div>
+    <div class="chosen-name" id="chosenName"></div>
+    <div class="lot-number" id="lotNumber"></div>
+    <div class="rule"></div>
+    <div class="verse-block">
+      <div class="lang-tag">ESV</div>
+      <div class="verse-text" id="verseText"></div>
+      <div class="verse-ref" id="verseRef"></div>
+    </div>
+    <div class="verse-block">
+      <div class="lang-tag">和合本</div>
+      <div class="verse-text verse-zh" id="verseTextZh"></div>
+      <div class="verse-ref" id="verseRefZh"></div>
+    </div>
+    <button class="close-btn" id="closeCard">Close</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const colors = ['#b0401f','#7a4a22','#d68c2f','#c96a2c','#8a6a1f','#8c2f1f'];
+
+  const verses = [
+    { text: "I can do all things through him who strengthens me.", ref: "Philippians 4:13", zh: "我靠着那加给我力量的，凡事都能做。", zhRef: "腓立比书 4:13" },
+    { text: "For I know the plans I have for you, declares the LORD, plans for welfare and not for evil, to give you a future and a hope.", ref: "Jeremiah 29:11", zh: "耶和华说：我知道我向你们所怀的意念是赐平安的意念，不是降灾祸的意念，要叫你们末后有指望。", zhRef: "耶利米书 29:11" },
+    { text: "Fear not, for I am with you; be not dismayed, for I am your God; I will strengthen you, I will help you, I will uphold you with my righteous right hand.", ref: "Isaiah 41:10", zh: "你不要害怕，因为我与你同在；不要惊惶，因为我是你的神。我必坚固你，我必帮助你；我必用我公义的右手扶持你。", zhRef: "以赛亚书 41:10" },
+    { text: "Trust in the LORD with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths.", ref: "Proverbs 3:5-6", zh: "你要专心仰赖耶和华，不可倚靠自己的聪明，在你一切所行的事上都要认定他，他必指引你的路。", zhRef: "箴言 3:5-6" },
+    { text: "The LORD is my shepherd; I shall not want.", ref: "Psalm 23:1", zh: "耶和华是我的牧者，我必不至缺乏。", zhRef: "诗篇 23:1" },
+    { text: "Have I not commanded you? Be strong and courageous. Do not be frightened, and do not be dismayed, for the LORD your God is with you wherever you go.", ref: "Joshua 1:9", zh: "我岂没有吩咐你吗？你当刚强壮胆！不要惧怕，也不要惊惶；因为你无论往哪里去，耶和华你的神必与你同在。", zhRef: "约书亚记 1:9" },
+    { text: "And we know that for those who love God all things work together for good, for those who are called according to his purpose.", ref: "Romans 8:28", zh: "我们晓得万事都互相效力，叫爱神的人得益处，就是按他旨意被召的人。", zhRef: "罗马书 8:28" },
+    { text: "God is our refuge and strength, a very present help in trouble.", ref: "Psalm 46:1", zh: "神是我们的避难所，是我们的力量，是我们在患难中随时的帮助。", zhRef: "诗篇 46:1" },
+    { text: "Therefore, if anyone is in Christ, he is a new creation. The old has passed away; behold, the new has come.", ref: "2 Corinthians 5:17", zh: "若有人在基督里，他就是新造的人，旧事已过，都变成新的了。", zhRef: "哥林多后书 5:17" },
+    { text: "I lift up my eyes to the hills. From where does my help come? My help comes from the LORD, who made heaven and earth.", ref: "Psalm 121:1-2", zh: "我要向山举目，我的帮助从何而来？我的帮助从造天地的耶和华而来。", zhRef: "诗篇 121:1-2" },
+    { text: "But seek first the kingdom of God and his righteousness, and all these things will be added to you.", ref: "Matthew 6:33", zh: "你们要先求他的国和他的义，这些东西都要加给你们了。", zhRef: "马太福音 6:33" },
+    { text: "but they who wait for the LORD shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint.", ref: "Isaiah 40:31", zh: "但那等候耶和华的必重新得力，他们必如鹰展翅上腾，他们奔跑却不困倦，行走却不疲乏。", zhRef: "以赛亚书 40:31" },
+    { text: "The LORD is my light and my salvation; whom shall I fear? The LORD is the stronghold of my life; of whom shall I be afraid?", ref: "Psalm 27:1", zh: "耶和华是我的亮光，是我的拯救，我还怕谁呢？耶和华是我性命的保障，我还惧谁呢？", zhRef: "诗篇 27:1" },
+    { text: "Be strong and courageous. Do not fear or be in dread of them, for it is the LORD your God who goes with you. He will not leave you or forsake you.", ref: "Deuteronomy 31:6", zh: "你们当刚强壮胆，不要害怕，也不要畏惧他们，因为耶和华你的神和你同去。他必不撇下你，也不丢弃你。", zhRef: "申命记 31:6" },
+    { text: "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.", ref: "John 3:16", zh: "神爱世人，甚至将他的独生子赐给他们，叫一切信他的，不至灭亡，反得永生。", zhRef: "约翰福音 3:16" }
+  ];
+
+  function verseForNumber(number){
+    return verses[(number - 1) % verses.length];
+  }
+
+  function verseForRef(ref){
+    const target = ref.trim().toLowerCase();
+    return verses.find(v => v.ref.toLowerCase() === target) || null;
+  }
+
+  const STORAGE_KEY = 'mid-autumn-draw-state';
+  let state = { names: ["TESTER 1", "TESTER 2"], drawn: [], assignments: {} };
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(parsed && Array.isArray(parsed.names)){
+          state = parsed;
+          if(!Array.isArray(state.drawn)) state.drawn = [];
+          if(!state.assignments || typeof state.assignments !== 'object') state.assignments = {};
+        }
+      } else {
+        saveState();
+      }
+    }catch(err){
+      try{ saveState(); }catch(e){}
+    }
+  }
+
+  function saveState(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }catch(err){}
+  }
+
+  function numberForName(name){
+    return state.names.indexOf(name) + 1;
+  }
+
+  function verseForName(name){
+    const assignedRef = state.assignments[name];
+    if(assignedRef){
+      const match = verseForRef(assignedRef);
+      if(match) return match;
+    }
+    return verseForNumber(numberForName(name));
+  }
+
+  function activeNames(){
+    return state.names.filter(n => !state.drawn.includes(n));
+  }
+
+  loadState();
+
+  let names = activeNames();
+
+  const assignInput = document.getElementById('assignInput');
+  function formatInputFromState(){
+    return state.names.map(name => {
+      return state.assignments[name] ? `${name} : ${state.assignments[name]}` : name;
+    }).join('\n');
+  }
+  assignInput.value = formatInputFromState();
+
+  const assignNote = document.getElementById('assignNote');
+
+  const canvas = document.getElementById('wheel');
+  const ctx = canvas.getContext('2d');
+  const size = canvas.width;
+  const center = size/2;
+  const radius = size/2 - 6;
+
+  let currentRotation = 0;
+  let spinning = false;
+
+  function drawWheel(){
+    ctx.clearRect(0,0,size,size);
+    const n = names.length;
+    if(n === 0) return;
+    const slice = (2*Math.PI)/n;
+
+    ctx.save();
+    ctx.translate(center, center);
+    ctx.rotate(currentRotation);
+
+    for(let i=0;i<n;i++){
+      const start = i*slice;
+      const end = start+slice;
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.arc(0,0,radius,start,end);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+      ctx.strokeStyle = '#fbe6c8';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.save();
+      ctx.rotate(start + slice/2);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#fbe6c8';
+      ctx.font = '700 26px "Mulish", "Segoe UI", sans-serif';
+      const trimmed = names[i].length > 18 ? names[i].slice(0,17)+'…' : names[i];
+      ctx.fillText(trimmed, radius - 22, 9);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  drawWheel();
+
+  const spinBtn = document.getElementById('spin');
+  function updateSpinButton(){
+    if(names.length === 0){
+      spinBtn.disabled = true;
+      spinBtn.textContent = 'No names left';
+    } else {
+      spinBtn.disabled = false;
+      spinBtn.textContent = 'Spin the wheel';
+    }
+  }
+  updateSpinButton();
+
+  const overlay = document.getElementById('overlay');
+  const chosenNameEl = document.getElementById('chosenName');
+  const verseTextEl = document.getElementById('verseText');
+  const verseRefEl = document.getElementById('verseRef');
+  const verseTextZhEl = document.getElementById('verseTextZh');
+  const verseRefZhEl = document.getElementById('verseRefZh');
+  const closeBtn = document.getElementById('closeCard');
+  const lotNumberEl = document.getElementById('lotNumber');
+  const recordBody = document.getElementById('recordBody');
+  const recordTable = document.getElementById('recordTable');
+  const recordEmpty = document.getElementById('recordEmpty');
+
+  function renderRecords(){
+    if(state.drawn.length === 0){
+      recordTable.style.display = 'none';
+      recordEmpty.style.display = 'block';
+      return;
+    }
+    recordTable.style.display = 'table';
+    recordEmpty.style.display = 'none';
+    recordBody.innerHTML = '';
+    [...state.drawn].reverse().forEach(name => {
+      const number = numberForName(name);
+      const verse = verseForName(name);
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="num">No.' + number + '</td>' +
+        '<td>' + escapeHtml(name) + '</td>' +
+        '<td class="verse-cell">' + escapeHtml(verse.ref) + ' / ' + escapeHtml(verse.zhRef) + '</td>';
+      recordBody.appendChild(tr);
+    });
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  renderRecords();
+
+  canvas.style.transition = 'transform 4.2s cubic-bezier(.15,.75,.15,1)';
+
+  function pickWinner(finalRotationRad){
+    const n = names.length;
+    const slice = (2*Math.PI)/n;
+    let rot = finalRotationRad % (2*Math.PI);
+    if(rot < 0) rot += 2*Math.PI;
+    let pointerRelative = ( (3*Math.PI/2) - rot ) % (2*Math.PI);
+    if(pointerRelative < 0) pointerRelative += 2*Math.PI;
+    return Math.floor(pointerRelative / slice) % n;
+  }
+
+  spinBtn.addEventListener('click', function(){
+    if(spinning || names.length === 0) return;
+    spinning = true;
+    spinBtn.disabled = true;
+
+    const extraSpins = 5 + Math.random()*3;
+    const randomOffset = Math.random()*2*Math.PI;
+    const targetRotation = currentRotation + extraSpins*2*Math.PI + randomOffset;
+
+    canvas.style.transform = `rotate(${targetRotation}rad)`;
+
+    setTimeout(function(){
+      spinning = false;
+      currentRotation = targetRotation;
+
+      const winnerIndex = pickWinner(targetRotation);
+      const winnerName = names[winnerIndex];
+      const lotNum = numberForName(winnerName);
+      const verse = verseForName(winnerName);
+
+      chosenNameEl.textContent = winnerName;
+      lotNumberEl.textContent = '签号 No. ' + lotNum;
+      verseTextEl.textContent = "\u201C" + verse.text + "\u201D";
+      verseRefEl.textContent = verse.ref;
+      verseTextZhEl.textContent = "\u201C" + verse.zh + "\u201D";
+      verseRefZhEl.textContent = verse.zhRef;
+      overlay.classList.add('show');
+
+      state.drawn.push(winnerName);
+      saveState();
+      renderRecords();
+
+      names = activeNames();
+      canvas.style.transition = 'none';
+      canvas.style.transform = 'rotate(0rad)';
+      currentRotation = 0;
+      drawWheel();
+      requestAnimationFrame(()=>{ canvas.style.transition = 'transform 4.2s cubic-bezier(.15,.75,.15,1)'; });
+
+      updateSpinButton();
+    }, 4300);
+  });
+
+  closeBtn.addEventListener('click', () => overlay.classList.remove('show'));
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.remove('show'); });
+
+  document.getElementById('clearRecords').addEventListener('click', function(){
+    state.drawn = [];
+    saveState();
+    names = activeNames();
+    updateSpinButton();
+    renderRecords();
+    canvas.style.transition = 'none';
+    canvas.style.transform = 'rotate(0rad)';
+    currentRotation = 0;
+    drawWheel();
+    requestAnimationFrame(()=>{ canvas.style.transition = 'transform 4.2s cubic-bezier(.15,.75,.15,1)'; });
+  });
+
+  document.getElementById('applyAssignments').addEventListener('click', function(){
+    const lines = assignInput.value.split('\n').map(s=>s.trim()).filter(Boolean);
+    const parsedNames = [];
+    const parsedAssignments = {};
+    const badLines = [];
+
+    lines.forEach(line => {
+      const sepIndex = line.indexOf(':');
+      if(sepIndex === -1){
+        parsedNames.push(line);
+      } else {
+        const name = line.slice(0, sepIndex).trim();
+        const ref = line.slice(sepIndex + 1).trim();
+        if(name){
+          parsedNames.push(name);
+          if(ref){
+            if(verseForRef(ref)){
+              parsedAssignments[name] = ref;
+            } else {
+              badLines.push(line + ' (verse not found)');
+            }
+          }
+        }
+      }
+    });
+
+    if(parsedNames.length === 0){
+      alert('Please enter at least one name.');
+      return;
+    }
+
+    state.names = parsedNames;
+    state.assignments = parsedAssignments;
+    state.drawn = [];
+    saveState();
+
+    names = activeNames();
+    updateSpinButton();
+    renderRecords();
+
+    canvas.style.transition = 'none';
+    canvas.style.transform = 'rotate(0rad)';
+    currentRotation = 0;
+    drawWheel();
+    requestAnimationFrame(()=>{ canvas.style.transition = 'transform 4.2s cubic-bezier(.15,.75,.15,1)'; });
+
+    if(badLines.length){
+      assignNote.textContent = 'Wheel updated. Warnings: ' + badLines.join(' | ');
+      assignNote.style.color = 'var(--wine)';
+    } else {
+      assignNote.textContent = 'Wheel and assignments updated!';
+      assignNote.style.color = 'var(--ink-soft)';
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
